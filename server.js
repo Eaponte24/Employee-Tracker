@@ -175,6 +175,73 @@ addDepartment = () => {
     promptUserquestions();
   });
 
-  })
+ })
   
+}
+
+// Add Role Function
+addRole = () => {
+  
+  inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'addRole',
+      message: "What Role are you going to add?",
+      validate: addRole => {
+        if (addRole) {
+            return true;
+        } else {
+            console.log(chalk.red('Must Enter a role!'));
+            return false;
+        }
+      }
+    },
+    {
+      type: 'input', 
+      name: 'addSalary',
+      message: "What is the expected Salary of this role?",
+      validate: addSalary => {
+        if (addSalary) {
+            return true;
+        } else {
+            console.log(chalk.red('Must Enter a Salary!'));
+            return false;
+        }
+      }
+    },
+    {
+      type: 'list', 
+      name: 'addDeptid',
+      message: "What Department is this role in?",
+      choices: [1,
+                2,
+                3,
+                4],
+      validate: addDeptid => {
+        if (addDeptid) {
+            return true;
+        } else {
+            console.log(chalk.red('Must enter the Department ID!'));
+            return false;
+        }
+      }
+    }
+  ])
+  .then(answer => {
+    
+    const sql = `INSERT INTO role (title, salary, department_id)
+    VALUES (?, ?, ?)`;
+    
+  db.query(sql, [answer.addRole, answer.addSalary, answer.addDeptid] ,(err, results) => {
+    if (err) throw err;
+    console.log(chalk.blue("You have added " + answer.addRole + "to the Roles!"));
+    promptUserquestions();
+  });
+
+ })
+}
+
+// Add Employee Function
+addEmployee = () => {
+
 }
