@@ -21,7 +21,7 @@ const db = mysql.createConnection(
     password: 'Winter24!',
     database: 'workers_db'
   },
-  console.log(`Connected to the workers_db database.`)
+  console.log(chalk.red(`Connected to the workers_db database.`))
 );
 
 db.connect(err => {
@@ -145,4 +145,36 @@ from employee
     console.table(results);
     promptUserquestions();
   });
+};
+
+// Add Department Function
+addDepartment = () => {
+  inquirer.prompt([
+    {
+      type: 'input', 
+      name: 'addDepartment',
+      message: "What Department are you going to add?",
+      validate: addDepartment => {
+        if (addDepartment) {
+            return true;
+        } else {
+            console.log(chalk.red('Must Enter a Department!'));
+            return false;
+        }
+      }
+    }
+  ])
+  .then(answer => {
+    
+    const sql = `INSERT INTO department (name) VALUES (?)`;
+
+
+  db.query(sql, answer.addDepartment ,(err, results) => {
+   
+    console.log(Chalk.blue("You have added " + answer.addDepartment + "to the Departments"));
+    promptUserquestions();
+  });
+
+  })
+  
 }
