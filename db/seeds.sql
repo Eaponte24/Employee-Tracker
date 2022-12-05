@@ -25,5 +25,5 @@ VALUES
 ('Scott', 'Northrop', 3, 3),
 ('Ricky', 'Aponte', 6, null),
 ('Alex', 'Sanchez', 5, 5),
-('Andrew', 'Feder', 7, null),
+('Andrew','Feder', 7, null),
 ('Matt', 'Brown', 8, 7);

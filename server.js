@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2');
 const cTable = require('console.table');
 const inquirer = require('inquirer'); 
+const chalk = require("chalk");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -30,11 +31,11 @@ db.connect(err => {
   });
   
   // once connected a 
-  DBconnected = () => {
+  DBconnected = () => { 
     
-    console.log("* ------------------------------- *")
-    console.log("*        Workers MANAGER          *")
-    console.log("* ------------------------------- *")
+    console.log(chalk.yellow("* ------------------------------- *"))
+    console.log(chalk.yellow("*        Workers MANAGER          *"))
+    console.log(chalk.yellow("* ------------------------------- *"))
    
     promptUserquestions();
   };
@@ -92,3 +93,56 @@ const promptUserquestions = () => {
       };
     });
   };
+
+  // Showing Departments Function
+  showDepartments = () => {
+   
+    console.log(chalk.green("Now Showing Departments.\n"));
+
+      db.query('SELECT department.id as ID, department.name as Department FROM department', function (err, results) {
+          console.table(results);
+          promptUserquestions();
+        });
+};
+
+// Showing Roles Function
+showRoles= () => {
+
+  console.log(chalk.green("Now Showing Roles.\n"));
+
+  const sql = `Select 
+  role.id as ID, 
+  role.title as Role, 
+  department.name as Department
+  from role
+  inner join department on role.department_id = department.id`;
+
+  db.query(sql, function (err, results) {
+    console.table(results);
+    promptUserquestions();
+  });
+}
+
+// Showing Employees and their Managers Function
+showEmployees = () => {
+  
+  console.log(chalk.green("Now Showing All Employees.\n"));
+
+  const sql = `Select 
+      employee.id, 
+      concat (employee.first_name, " ", employee.last_name) as Employee,
+      role.salary as Salary,
+      role.title as Job_Title,
+      department.name as Department,
+      CONCAT (manager.first_name, " ", manager.last_name) AS manager
+from employee
+      LEFT JOIN role ON employee.role_id = role.id
+      LEFT JOIN department ON role.department_id = department.id
+      LEFT JOIN employee manager ON employee.manager_id = manager.id;
+`;
+
+  db.query(sql, function (err, results) {
+    console.table(results);
+    promptUserquestions();
+  });
+}
