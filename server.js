@@ -166,12 +166,13 @@ addDepartment = () => {
   ])
   .then(answer => {
     
-    const sql = `INSERT INTO department (name) VALUES (?)`;
+    const sql = `INSERT INTO department (name)
+                 VALUES (?)`;
 
 
   db.query(sql, answer.addDepartment ,(err, results) => {
    
-    console.log(Chalk.blue("You have added " + answer.addDepartment + "to the Departments"));
+    console.log(chalk.blue("You have added " + answer.addDepartment + "to the Departments"));
     promptUserquestions();
   });
 
@@ -182,66 +183,131 @@ addDepartment = () => {
 // Add Role Function
 addRole = () => {
   
-  inquirer.prompt([
-    {
-      type: 'input', 
-      name: 'addRole',
-      message: "What Role are you going to add?",
-      validate: addRole => {
-        if (addRole) {
-            return true;
-        } else {
-            console.log(chalk.red('Must Enter a role!'));
-            return false;
-        }
-      }
-    },
-    {
-      type: 'input', 
-      name: 'addSalary',
-      message: "What is the expected Salary of this role?",
-      validate: addSalary => {
-        if (addSalary) {
-            return true;
-        } else {
-            console.log(chalk.red('Must Enter a Salary!'));
-            return false;
-        }
-      }
-    },
-    {
-      type: 'list', 
-      name: 'addDeptid',
-      message: "What Department is this role in?",
-      choices: [1,
-                2,
-                3,
-                4],
-      validate: addDeptid => {
-        if (addDeptid) {
-            return true;
-        } else {
-            console.log(chalk.red('Must enter the Department ID!'));
-            return false;
-        }
-      }
-    }
-  ])
-  .then(answer => {
-    
-    const sql = `INSERT INTO role (title, salary, department_id)
-    VALUES (?, ?, ?)`;
-    
-  db.query(sql, [answer.addRole, answer.addSalary, answer.addDeptid] ,(err, results) => {
+  // crating the object for the choices for departments
+  const departments = [];
+  db.query("SELECT * FROM DEPARTMENT", (err, res) => {
     if (err) throw err;
-    console.log(chalk.blue("You have added " + answer.addRole + "to the Roles!"));
-    promptUserquestions();
-  });
 
- })
+    res.forEach(dep => {
+      let depOBJ = {
+        name: dep.name,
+        value: dep.id
+      }
+      departments.push(depOBJ);
+    });
+
+    
+    let questions = [
+      {
+        type: "input",
+        name: "title",
+        message: "What is the name of this Role??"
+      },
+      {
+        type: "input",
+        name: "salary",
+        message: "What is the expected Salary of the Role??"
+      },
+      {
+        type: "list",
+        name: "department",
+        choices: departments,
+        message: "what Department is this Role in?"
+      }
+    ];
+
+    inquirer.prompt(questions)
+    .then(response => {
+      
+    const query = `INSERT INTO ROLE (title, salary, department_id) 
+                   VALUES (?)`;
+      
+    db.query(query, [[response.title, response.salary, response.department]], (err, res) => {
+        if (err) throw err;
+        
+        console.log(chalk.blue(`Successfully added the ${response.title} role!`));
+        promptUserquestions();
+      });
+    })
+    .catch(err => {
+      console.error(err);
+    });
+  });
 }
 
 // Add Employee Function
 addEmployee = () => {
+  
+  // creating choices for the managers for that added employee
+  db.query("SELECT * FROM EMPLOYEE", (err, eRes) => {
+    if (err) throw err;
+    const managerChoice = [
+      {
+        name: 'None',
+        value: 0
+      }
+    ]; 
+      eRes.forEach(({ first_name, last_name, id }) => {
+        managerChoice.push({
+          name: first_name + " " + last_name,
+          value: id
+      });
+    });
+    
+  // creating the role choices for that added employee
+    db.query("SELECT * FROM ROLE", (err, roleRes) => {
+      if (err) throw err;
+      const roles = [];
+        roleRes.forEach(({ title, id }) => {
+          roles.push({
+            name: title,
+            value: id
+            });
+        });
 
+        let questions = [
+          {
+            type: "input",
+            name: "first_name",
+            message: "what is the employee's first name?"
+          },
+          {
+            type: "input",
+            name: "last_name",
+            message: "what is the employee's last name?"
+          },
+          {
+            type: "list",
+            name: "role_id",
+            choices: roles,
+            message: "what is the employee's role?"
+          },
+          {
+            type: "list",
+            name: "manager_id",
+            choices: managerChoice,
+            message: "who is the employee's manager? (could be null)"
+          }
+        ]
+
+        inquirer.prompt(questions)
+        .then(response => {
+
+          const query = `INSERT INTO EMPLOYEE (first_name, last_name, role_id, manager_id) 
+                        VALUES (?)`;
+
+          let manager_id = response.manager_id !== 0? response.manager_id: null;
+
+          db.query(query, [[response.first_name, response.last_name, response.role_id, manager_id]], (err, res) => {
+            if (err) throw err;
+                console.log(chalk.blue(`Successfully added ${response.first_name} ${response.last_name} as an Employee!`));
+
+              promptUserquestions();
+           });
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    })
+  });
 }
