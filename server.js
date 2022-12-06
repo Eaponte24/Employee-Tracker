@@ -26,7 +26,6 @@ const db = mysql.createConnection(
 
 db.connect(err => {
     if (err) throw err;
-    console.log('connected as id ' + db.threadId);
     DBconnected();
   });
   
@@ -310,4 +309,75 @@ addEmployee = () => {
         });
     })
   });
-}
+};
+
+// Update Employees role function
+updateEmployee = () => {
+
+  // Get list of roles as a variable
+  db.query("SELECT * FROM EMPLOYEE", (err, eRes) => {
+    if (err) throw err;
+    
+  const empChoice = [];
+     
+      eRes.forEach(({ first_name, last_name, id }) => {
+        empChoice.push({
+          name: first_name + " " + last_name,
+          value: id
+      });
+
+    });
+    
+    // Get list of employees as a variable
+    db.query("SELECT * FROM ROLE", (err, rolRes) => {
+      if (err) throw err;
+      
+   const roles = [];
+        
+      rolRes.forEach(({ title, id }) => {
+          roles.push({
+            name: title,
+            value: id
+          });
+
+        });
+     
+      let questions = [
+        {
+          type: "list",
+          name: "id",
+          choices: empChoice,
+          message: "Which employee's role do you want to update?"
+        },
+        {
+          type: "list",
+          name: "role_id",
+          choices: roles,
+          message: "what is the new role for this employee?"
+        }
+      ]
+  
+      inquirer.prompt(questions)
+        
+      .then(response => {
+          
+        const sql = `UPDATE EMPLOYEE 
+                     SET ? 
+                     WHERE ?? = ?;`;
+          db.query(sql, [
+            {role_id: response.role_id},
+            "id",
+            response.id], (err, res) => {
+            if (err) throw err;
+            
+            console.log(chalk.blue("You have updated this employees role!"));
+            promptUserquestions();
+          });
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      })
+  });
+};
+ 
