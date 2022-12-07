@@ -171,7 +171,7 @@ addDepartment = () => {
 
   db.query(sql, answer.addDepartment ,(err, results) => {
    
-    console.log(chalk.blue("You have added " + answer.addDepartment + "to the Departments"));
+    console.log(chalk.blue(`You have added ${answer.addDepartment} to Departments!`));
     promptUserquestions();
   });
 
